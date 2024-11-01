@@ -60,6 +60,6 @@ func draw_logic() -> void:
 	mesh_instance.global_transform = Transform3D.IDENTITY
 	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
 	
-	# Free the mesh after one frame
+	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()

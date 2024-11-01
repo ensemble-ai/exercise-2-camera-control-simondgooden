@@ -3,7 +3,7 @@ extends CameraControllerBase
 
 @export var top_left: Vector2 = Vector2(-5, 5)  
 @export var bottom_right: Vector2 = Vector2(5, -5)
-@export var autoscroll_speed: Vector3 = Vector3(0.0, 0.0, 0.0)
+@export var autoscroll_speed: Vector3 = Vector3(8.0, 0.0, 0.0)
 
 func _ready() -> void:
 	position = target.position
@@ -48,13 +48,11 @@ func draw_logic() -> void:
 	mesh_instance.mesh = immediate_mesh
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	
-	# Set up the box boundaries directly from top_left and bottom_right
 	var left = top_left.x
 	var right = bottom_right.x
 	var top = top_left.y
 	var bottom = bottom_right.y
 
-	# Begin drawing the box as a line loop
 	immediate_mesh.surface_begin(Mesh.PRIMITIVE_LINES, material)
 	immediate_mesh.surface_add_vertex(Vector3(right, 0, top))
 	immediate_mesh.surface_add_vertex(Vector3(right, 0, bottom))
@@ -69,15 +67,13 @@ func draw_logic() -> void:
 	immediate_mesh.surface_add_vertex(Vector3(right, 0, top))
 	immediate_mesh.surface_end()
 
-	# Set material properties
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color.BLACK
+	material.albedo_color = Color.WHITE
 	
-	# Add the mesh to the scene and position it around the target
 	add_child(mesh_instance)
 	mesh_instance.global_transform = Transform3D.IDENTITY
 	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
 	
-	# Free the mesh after one frame
+	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()

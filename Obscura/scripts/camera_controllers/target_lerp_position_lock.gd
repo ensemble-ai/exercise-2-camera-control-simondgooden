@@ -6,9 +6,9 @@ extends CameraControllerBase
 @export var leash_distance: float = 10.0 
 @export var catchup_delay_duration: float = 0.5 
 
-var catchup_timer: float = 0.0  # Timer for delayed catch-up after stopping
-var target_last_position: Vector3  # Tracks the last known position of the target
-var is_moving: bool = false  # Tracks if the target is moving
+var catchup_timer: float = 0.0  
+var target_last_position: Vector3 
+var is_moving: bool = false 
 
 func _ready() -> void:
 	position = target.global_position
@@ -27,12 +27,11 @@ func _process(delta: float) -> void:
 	super(delta)
 
 func update_camera_position(delta: float) -> void:
-	# Calculate target's movement direction
 	var target_direction = (target.global_position - target_last_position).normalized()
 	var target_xz: Vector2 = Vector2(target.global_position.x, target.global_position.z)
 	var camera_xz: Vector2 = Vector2(position.x, position.z)
 	var dist_to_target: float = camera_xz.distance_to(target_xz)
-	
+
 	if target.global_position.distance_to(target_last_position) > 0.01:
 		is_moving = true
 		catchup_timer = 0.0 
@@ -40,24 +39,21 @@ func update_camera_position(delta: float) -> void:
 		is_moving = false
 		catchup_timer += delta
 
-	# Update target's last known position
 	target_last_position = target.global_position
 
-	# Determine camera behavior based on movement
 	if is_moving and dist_to_target < leash_distance:
-		# Lead the camera slightly in the target's direction
 		var lead_position = target.global_position + target_direction * leash_distance
 		position = position.move_toward(Vector3(lead_position.x, position.y, lead_position.z), lead_speed * delta)
 	elif catchup_timer >= catchup_delay_duration:
-		# Catch up to target if it hasn't moved for `catchup_delay_duration`
 		position = position.move_toward(Vector3(target.global_position.x, position.y, target.global_position.z), catchup_speed * delta)
 	else:
-		# Lerp smoothly within leash range when the player is not moving far
-		position = position.lerp(Vector3(target.global_position.x, position.y, target.global_position.z), 50 * delta / max(dist_to_target, 1.0)) #We use 50 here since thats the sep
+		var speed_multiplier: float
+		if target.velocity.length() > 100.0:
+			speed_multiplier = 500.0
+		else:
+			speed_multiplier = 50.0
+		position = position.lerp(Vector3(target.global_position.x, position.y, target.global_position.z), speed_multiplier * delta / max(dist_to_target, 1.0))
 
-	print("Camera position (xz): ", camera_xz)
-	print("Target position (xz): ", target_xz)
-	print("Distance to target (xz): ", dist_to_target)
 
 func draw_logic() -> void:
 	var mesh_instance := MeshInstance3D.new()
@@ -87,6 +83,6 @@ func draw_logic() -> void:
 	mesh_instance.global_transform = Transform3D.IDENTITY
 	mesh_instance.global_position = Vector3(global_position.x, target.global_position.y, global_position.z)
 	
-	# Free the mesh after one frame
+	#mesh is freed after one update of _process
 	await get_tree().process_frame
 	mesh_instance.queue_free()
