@@ -1,13 +1,13 @@
 class_name LerpPositionLock
 extends CameraControllerBase
 
-@export var follow_speed: float = 200.0  
-@export var catchup_speed: float = 5.0  
+@export var follow_speed: float = 10.0  
+@export var catchup_speed: float = 10.0  
 @export var leash_distance: float = 10.0 
 
 func _ready() -> void:
+	position = target.global_position
 	super()
-	position = target.position
 
 func _process(delta: float) -> void:
 	if !current:
@@ -21,11 +21,16 @@ func _process(delta: float) -> void:
 	super(delta)
 
 func update_camera_position(delta: float) -> void:
-	var dist_to_target: float = position.distance_to(target.global_position)
-	position = position.lerp(target.global_position, catchup_speed * delta / dist_to_target)
-	
-	if dist_to_target >= leash_distance:
-		print("greater than lerp")
+	var camera_xz: Vector2 = Vector2(position.x, position.z)
+	var target_xz: Vector2 = Vector2(target.global_position.x, target.global_position.z)
+	var dist_to_target: float = camera_xz.distance_to(target_xz)
+
+	if dist_to_target > leash_distance:
+		position = position.lerp(Vector3(target.global_position.x, position.y, target.global_position.z), catchup_speed * delta)
+	elif dist_to_target > 0.01:
+		position = position.lerp(Vector3(target.global_position.x, position.y, target.global_position.z), follow_speed * delta / dist_to_target)
+	else:
+		position = Vector3(target.global_position.x, position.y, target.global_position.z)
 
 func draw_logic() -> void:
 	var mesh_instance := MeshInstance3D.new()

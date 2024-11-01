@@ -70,7 +70,7 @@ func draw_logic() -> void:
 	immediate_mesh.surface_end()
 
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color.BLACK
+	material.albedo_color = Color.WHITE
 	
 	add_child(mesh_instance)
 	mesh_instance.global_transform = Transform3D.IDENTITY

@@ -6,8 +6,8 @@ extends CameraControllerBase
 @export var autoscroll_speed: Vector3 = Vector3(0.0, 0.0, 0.0)
 
 func _ready() -> void:
-	super()
 	position = target.position
+	super()
 
 func _process(delta: float) -> void:
 	if !current:
